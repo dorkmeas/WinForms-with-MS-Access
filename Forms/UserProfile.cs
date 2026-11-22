@@ -71,6 +71,25 @@ public partial class UserProfile : Form
         txtFullName.Focus();
     }
 
+    private bool ValidateForm()
+    {
+        if (string.IsNullOrWhiteSpace(txtFullName.Text))
+        {
+            MessageBox.Show("Please enter Full Name.", "Validation",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            txtFullName.Focus();
+            return false;
+        }
+        if (string.IsNullOrWhiteSpace(cboGender.Text))
+        {
+            MessageBox.Show("Please select Gender.", "Validation",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            cboGender.Focus();
+            return false;
+        }
+        return true;
+    }
+
     private void dgvUsers_CellClick(object sender, DataGridViewCellEventArgs e)
     {
         if (e.RowIndex < 0) return;
@@ -91,21 +110,7 @@ public partial class UserProfile : Form
 
     private void btnSave_Click(object sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(txtFullName.Text))
-        {
-            MessageBox.Show("Please enter Full Name.", "Validation",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            txtFullName.Focus();
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(cboGender.Text))
-        {
-            MessageBox.Show("Please select Gender.", "Validation",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            cboGender.Focus();
-            return;
-        }
+        if (!ValidateForm()) return;
 
         try
         {
@@ -141,8 +146,49 @@ public partial class UserProfile : Form
 
     private void btnEdit_Click(object sender, EventArgs e)
     {
-        MessageBox.Show("Edit function is not available yet.\n(Only Insert is implemented)",
-            "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        if (_selectedId <= 0)
+        {
+            MessageBox.Show("Please select a user from the list first.", "Validation",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        if (!ValidateForm()) return;
+
+        try
+        {
+            using var conn = new OleDbConnection(ConnStr);
+            conn.Open();
+
+            string sql = "UPDATE tbUserInfo SET fullname=?, gender=?, phone=?, email=?, address=? WHERE ID=?";
+
+            using var cmd = new OleDbCommand(sql, conn);
+            cmd.Parameters.AddWithValue("?", txtFullName.Text.Trim());
+            cmd.Parameters.AddWithValue("?", cboGender.Text.Trim());
+            cmd.Parameters.AddWithValue("?", txtPhone.Text.Trim());
+            cmd.Parameters.AddWithValue("?", txtEmail.Text.Trim());
+            cmd.Parameters.AddWithValue("?", txtAddress.Text.Trim());
+            cmd.Parameters.AddWithValue("?", _selectedId);
+
+            int rows = cmd.ExecuteNonQuery();
+            if (rows > 0)
+            {
+                MessageBox.Show("User Account Successfully Updated",
+                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ClearForm();
+                LoadData();
+            }
+            else
+            {
+                MessageBox.Show("No record was updated.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Update Error: " + ex.Message, "Error",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void btnDelete_Click(object sender, EventArgs e)
