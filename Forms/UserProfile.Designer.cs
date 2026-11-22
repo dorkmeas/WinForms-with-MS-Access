@@ -221,6 +221,7 @@ partial class UserProfile
         dgvUsers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         dgvUsers.Size = new Size(800, 280);
         dgvUsers.TabIndex = 11;
+        dgvUsers.CellClick += dgvUsers_CellClick;
 
         // UserProfile
         AutoScaleDimensions = new SizeF(7F, 15F);

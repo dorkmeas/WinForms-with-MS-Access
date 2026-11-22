@@ -9,6 +9,8 @@ public partial class UserProfile : Form
         "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" +
         Path.Combine(Application.StartupPath, "dbStore.mdb");
 
+    private int _selectedId = 0;
+
     public UserProfile()
     {
         InitializeComponent();
@@ -60,12 +62,26 @@ public partial class UserProfile : Form
 
     private void ClearForm()
     {
+        _selectedId = 0;
         txtFullName.Clear();
         cboGender.SelectedIndex = -1;
         txtPhone.Clear();
         txtEmail.Clear();
         txtAddress.Clear();
         txtFullName.Focus();
+    }
+
+    private void dgvUsers_CellClick(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0) return;
+
+        var row = dgvUsers.Rows[e.RowIndex];
+        _selectedId = Convert.ToInt32(row.Cells["ID"].Value);
+        txtFullName.Text = row.Cells["fullname"].Value?.ToString() ?? "";
+        cboGender.Text = row.Cells["gender"].Value?.ToString() ?? "";
+        txtPhone.Text = row.Cells["phone"].Value?.ToString() ?? "";
+        txtEmail.Text = row.Cells["email"].Value?.ToString() ?? "";
+        txtAddress.Text = row.Cells["address"].Value?.ToString() ?? "";
     }
 
     private void btnNew_Click(object sender, EventArgs e)
