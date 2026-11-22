@@ -193,7 +193,48 @@ public partial class UserProfile : Form
 
     private void btnDelete_Click(object sender, EventArgs e)
     {
-        MessageBox.Show("Delete function is not available yet.\n(Only Insert is implemented)",
-            "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        if (_selectedId <= 0)
+        {
+            MessageBox.Show("Please select a user from the list first.", "Validation",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            $"Are you sure you want to delete user '{txtFullName.Text}'?",
+            "Confirm Delete",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+
+        if (confirm != DialogResult.Yes) return;
+
+        try
+        {
+            using var conn = new OleDbConnection(ConnStr);
+            conn.Open();
+
+            string sql = "DELETE FROM tbUserInfo WHERE ID=?";
+            using var cmd = new OleDbCommand(sql, conn);
+            cmd.Parameters.AddWithValue("?", _selectedId);
+
+            int rows = cmd.ExecuteNonQuery();
+            if (rows > 0)
+            {
+                MessageBox.Show("User Account Successfully Deleted",
+                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ClearForm();
+                LoadData();
+            }
+            else
+            {
+                MessageBox.Show("No record was deleted.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Delete Error: " + ex.Message, "Error",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }
